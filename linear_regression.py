@@ -1,8 +1,35 @@
+"""
+    Things to be done:
+    - Add A LOT of comments.
+    - Think about code design and need for refactoring.
+    - Read convergence theory and about when to stop gradient descent. DONE
+    - Think about how to test the model.
+"""
+
 import numpy as np
 
-class LinearRegression:
+class LinearRegressionModel:
     def __init__(self):
+        # Fundamental constants used in the model:
+        self.RELATIVE_COST_CHANGE_THRESHOLD = 0.001
+        """
+        - The relative change in cost function between successive iterations should fall below this value for convergence to be achieved.
+        - It is meant to represent a relative change. Percentage values need to be converted into decimals.
+        - e.g] a treshold of 10% should be represented as 0.1
+        """
+
+        self.MAX_ALLOWED_ITERATIONS = 1000
+        """
+        -
+        """
+
         self.parameters = []
+        self.cost_function_history = [0]
+        """
+        - The initial cost value is set to zero in order to allow the firs comparison.
+        - If the list was left blank, there would be no value to check against to test for convergence.
+        """
+        self.iteration_count = 0
 
     def train(self, training_data, learning_rate):
         # --- DATA PROCESSING ---:
@@ -28,8 +55,8 @@ class LinearRegression:
         # --- TRAINING LOOP ---:
         # Initialising all parameters equal to zero.
         self.parameters = [0] * (number_of_features + 1)
-
-        while(not self.model_has_converged()):
+        while(not self.model_has_converged(input_features, output_variable)):
+            self.iteration_count += 1
             self.update_parameters(learning_rate, input_features, output_variable)
 
     def hypothesis(self, input_features):
@@ -39,21 +66,33 @@ class LinearRegression:
         return hypothesis
 
     def cost_function(self, input_features, output_variable):
-        cost_function = 0
+        cost = 0
         for row_of_features, output_value in zip(input_features, output_variable):
-            cost_function += 0.5 * (self.hypothesis(row_of_features) - output_value) ** 2
-        return cost_function
+            cost += 0.5 * (self.hypothesis(row_of_features) - output_value) ** 2
+        return cost
 
-    def model_has_converged(self):
-        return False
-        # TO BE CONTINUED FROM HERE
+    def model_has_converged(self, input_features, output_variable):
         """
-        Things to be done:
-        - Add A LOT of comments.
-        - Think about code design and need for refactoring.
-        - Read convergence theory and about when to stop gradient descent.
-        - Think about how to test the model.
+        Approach used to check for convergence:
+        - The approach combines two concepts: relative change in cost function and an iteration limit.
+        - Cost function:
+            - As the model keeps training, the cost function should decrease.
+            - As the model approaches its final form, the changes in the cost function should keep getting smaller.
+            - Thus, convergence is tested for by checking whether the relative change in the value of the cost has fallen below a certain pre-determined threshold.
+        - Iteration limit:
+            - In some cases, training may be too slow and the change in the cost may not satisfy the desired conditions.
+            - To avoid extremely long training times, a hard iteration limit is imposed.
         """
+        if self.iteration_count > self.MAX_ALLOWED_ITERATIONS:
+            return True
+        else:
+            self.cost_function_history.append(self.cost_function(input_features, output_variable))
+
+            new_cost = self.cost_function_history[-1]
+            old_cost = self.cost_function_history[-2]
+            relative_change_in_cost = abs((new_cost - old_cost)) / old_cost
+
+            return relative_change_in_cost < self.RELATIVE_COST_CHANGE_THRESHOLD
 
     def update_parameters(self, learning_rate, input_features, output_variable):
         for parameter, feature in zip(self.parameters, input_features):
@@ -62,10 +101,3 @@ class LinearRegression:
                 derivative_sum += feature * (self.hypothesis(row_of_features) - output_value)
 
             parameter = parameter - learning_rate * derivative_sum
-
-# Testing:
-regression_model = LinearRegression()
-sample_data_list = [[1, 2], [1, 2]]
-training_data = np.array(sample_data_list)
-# regression_model.parameters = [1, 1]
-regression_model.train(training_data)

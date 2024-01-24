@@ -1,0 +1,3 @@
+CONSTANT = 1
+CONSTANT = 2
+print(CONSTANT)
