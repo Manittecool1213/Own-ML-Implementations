@@ -1,11 +1,13 @@
 """
     Things to be done:
-    - Think about how to test the model with better datasets.
-    - Resolve issue where user has to provide value of x_0 while testing.
-    - Make notes for convergence theory and stopping gradient descent.
-    - Resolve overflow issues.
-    - Play with fundamental constant values to gauge impact on accuracy.
-    - Read about and implement accuracy metrics.
+    - [x] Resolve issue where user has to provide value of x_0 while testing.
+    - [ ] Solve issue of gradient descent not working - cost function just keeps increasing for large data.
+    - [ ] Think about how to test the model with better datasets.
+    - [ ] Play with fundamental constant values to gauge impact on accuracy.
+    - [ ] Make notes for convergence theory and stopping gradient descent.
+    - [ ] Read about and implement accuracy metrics.
+    - [ ] Read about other possible initial parameter values.
+    - [ ] System to graph change in every parameter as rounds progress.
 """
 
 import training_data as td
@@ -17,7 +19,7 @@ class LinearRegressionModel:
         """
         - The relative change in cost function between successive iterations should fall below this value for convergence to be achieved.
         - It is meant to represent a relative change. Percentage values need to be converted into decimals.
-        - e.g] a treshold of 10% should be represented as 0.1
+        - e.g] a threshold of 10% should be represented as 0.1
         """
 
         self.MAX_ALLOWED_ITERATIONS = max_allowed_iterations
@@ -79,15 +81,6 @@ class LinearRegressionModel:
 
     def update_parameters(self):
         # Updating parameters based on gradient descent algorithm.
-        # updated_parameter_list = []
-        # for parameter in self.parameters:
-        #     derivative_sum = 0
-        #     for row_of_features, output_value in zip(self.training_data.input_features, self.training_data.output_variable):
-        #         derivative_sum += (self.hypothesis(row_of_features) - output_value) * row_of_features[]
-
-        #     parameter = parameter - self.LEARNING_RATE * derivative_sum
-        #     updated_parameter_list.append(parameter)
-
         for loop_counter in range(len(self.parameters)):
             derivative_sum = 0
             for row_of_features, output_value in zip(self.training_data.input_features, self.training_data.output_variable):
@@ -95,25 +88,29 @@ class LinearRegressionModel:
 
             self.parameters[loop_counter] = self.parameters[loop_counter] - self.LEARNING_RATE * derivative_sum
 
-        # self.parameters = updated_parameter_list
-        # """
-        # - Iterating through the parameters using the zip function does not allow the values in the original parameters list to be changed.
-        # - Thus, the new set of parameters are first stored in a temporary list.
-        # - After all parameters have been updated, the list of parameters is also updated.
-        # """
-
     def cost_function(self):
         # The cost function quantifies the difference between the values predicted by the model and the true output variable.
         cost = 0
         for row_of_features, output_value in zip(self.training_data.input_features, self.training_data.output_variable):
             cost += 0.5 * (self.hypothesis(row_of_features) - output_value) ** 2
+            # print(f"Cost after newest update: {cost}")
         return cost
 
-    def hypothesis(self, row_of_features):
+    def hypothesis(self, row_of_features, testing = False):
         """
         - The hypothesis function is the prediction which the model makes.
         - It is used in the training as well as testing phases.
         """
+
+        if(testing == True):
+            row_of_features = list(row_of_features)
+            row_of_features.insert(0, 1)
+        """
+        - The testing data should be in the form of a 1D numpy array containing the input features.
+        - When the function is used for testing, '1' is appended to the inputted row of features.
+        - This allows the user to only enter the input features, without the additional '1' corresponding to x_0.
+        """
+
         hypothesis = 0
         for parameter, row_element in zip(self.parameters, row_of_features):
             hypothesis += parameter * row_element

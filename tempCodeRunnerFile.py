@@ -1,12 +1,6 @@
-import numpy as np
-import linear_regression_model as lm
+print("Model parameters after training:", model.parameters)
+# print()
 
-data_list = [[1, 1, 1, 2],
-             [1, 2, 1, 3],
-             [1, 1, 3, 4]]
-training_data = np.array(data_list)
-
-model = lm.LinearRegressionModel(training_data)
-model.train()
-print(model.cost_function_history)
-print(model.parameters)
+# testing_values = np.array([1])
+# print("Testing data provided:", testing_values)
+# print("Predicted value:", model.hypothesis(testing_values, testing = True))
